@@ -1,0 +1,63 @@
+def tokenize(expr: str):
+    tokens = []
+    i = 0
+    n = len(expr)
+    
+    def read_number(start):
+        num_str = ""
+        while start < n and (expr[start].isdigit() or expr[start] == '.'):
+            num_str += expr[start]
+            start += 1
+        return (float(num_str) if '.' in num_str else int(num_str)), start
+
+    while i < n:
+        ch = expr[i]
+        if ch.isdigit() or (ch == '.' and i + 1 < n and expr[i+1].isdigit()):
+            num, i = read_number(i)
+            tokens.append(num)
+            continue
+        if ch == '-':
+            if i == 0 or (tokens and isinstance(tokens[-1], str) and tokens[-1] in "+-*/^("):
+                i += 1
+                if i < n and (expr[i].isdigit() or expr[i] == '.'):
+                    num, i = read_number(i)
+                    tokens.append(-num)
+                    continue
+                else:
+                    raise ValueError("סינטקס שגוי: מינוס ללא מספר אחריו")
+            else:
+                tokens.append(ch)
+                i += 1
+                continue
+        if ch in "+*/^":
+            tokens.append(ch)
+            i += 1
+            continue
+        if ch == '!':
+            tokens.append(ch)
+            i += 1
+            continue
+        if ch in "()":
+            tokens.append(ch)
+            i += 1
+            continue
+        raise ValueError(f"תו לא מוכר: {ch}")
+    return tokens
+
+expressions = [
+    "3+4*5",
+    "-3+4",
+    "3+-4",
+    "3+4!-5",
+    "(-3)+4",
+    "3+(-4)",
+    "3.5+4.2",
+    "-3.5*2"
+]
+
+for expr in expressions:
+    try:
+        result = tokenize(expr)
+        print(f"{expr} -> {result}")
+    except Exception as e:
+        print(f"{expr} -> שגיאה: {e}")
